@@ -16,11 +16,11 @@ def create_connection(db_file):
     :return: Connection object or None
     """
     try:
-        conn = sqlite3.connect(db_file)
-        return conn
+        connection = sqlite3.connect(db_file)
+        return connection
     except Error as e:
         print(e)
-    return None
+        return None
 
 def insert_data():
     name = input("Enter the name of the item: ")
@@ -34,12 +34,12 @@ def insert_data():
         sqlresult = conn.execute("INSERT INTO vaccines (name,ndc,location,availability,arrivaldate,expirationdate,changemade)\
             values("+"'"+ str(name) +"'" + ",'"+ str(ndc) +"', '"+ str(location) +"','"+ str (availability)+"','"+str(arrivaldate)+"','"+ str (expirationdate)+"','"+str(changemade)+"')")
         result = conn.commit() #this actually runs the SQL and inserts the data into the database
-        print("***Data inserted successfully**")
-        print("SQL insert result is: ",sqlresult, "with result ",result)
-        print("")
+        if result == None:
+            print("*** Data saved to database. ***")
     except Error as e:
-        print ("***Insert error: ",e)
+        print ("*** Insert error: ",e)
         pass
+                                 
 def view_data():
     try:
         cursor = conn.execute ("SELECT id,name, ndc,location,availability,arrivaldate, expirationdate,changemade FROM vaccines" )
@@ -118,7 +118,7 @@ def delete_data():
     else:
         print("Deletion aborted.")
 
-conn = sqlite3.connect(database_file_path)
+conn = create_connection(database_file_path)
 now = datetime.datetime.now()
 
 if conn:
