@@ -1,170 +1,151 @@
+''' This is a simple vaccine management system using SQLite. 
+    It demonstrates the capabilities of SQLite. It is not intended for production environments.
+    For example, the changemade variable does not update once the program is started.
+    So, if someone left the application open for a long time and made changes later, the data would not be accurate.
+    '''
 import sqlite3
-from sqlite3 import Error
-import sys
+#importing Error this way let's us refer to it by this name instead of sqlite3.Error
+from sqlite3 import Error 
 import datetime
+database_file_path = "myinventory.db"
 
-def create_connection(db_myinventory):
+def create_connection(db_file):
     """ create a database connection to the SQLite database
         specified by the db_file
     :param db_file: database file
     :return: Connection object or None
     """
     try:
-        conn = sqlite3.connect(db_myinventory)
+        conn = sqlite3.connect(db_file)
         return conn
     except Error as e:
         print(e)
- 
     return None
 
-def create_table(conn,create_table_sql):
-    """ create a table from the create_table_sql statement
-    :param conn: Connection object
-    :param create_table_sql: a CREATE TABLE statement
-    :return:1
-    """
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-def insertdata():
+def insert_data():
     name = input("Enter the name of the item: ")
-    ndc = input("Enter the national drug code of the items: ")
+    ndc = input("Enter the national drug code of the item: ")
     location = input ("Enter the item inventory location: ")
     availability = input("Enter number of doses left: ")
     arrivaldate = input("Enter arrival date: ")
-    expirationdate = input("Enter expirationdatte: ")
+    expirationdate = input("Enter expiration date: ")
     changemade = str(now.year) +"/"+str(now.month) +"/"+str(now.day)
-    try:
-        
+    try:      
         sqlresult = conn.execute("INSERT INTO vaccines (name,ndc,location,availability,arrivaldate,expirationdate,changemade)\
             values("+"'"+ str(name) +"'" + ",'"+ str(ndc) +"', '"+ str(location) +"','"+ str (availability)+"','"+str(arrivaldate)+"','"+ str (expirationdate)+"','"+str(changemade)+"')")
-        conn.commit()
+        result = conn.commit() #this actually runs the SQL and inserts the data into the database
         print("***Data inserted successfully**")
-        print("SQL result is: ",sqlresult)
+        print("SQL insert result is: ",sqlresult, "with result ",result)
         print("")
     except Error as e:
         print ("***Insert error: ",e)
         pass
-def selectdata():
+def view_data():
     try:
         cursor = conn.execute ("SELECT id,name, ndc,location,availability,arrivaldate, expirationdate,changemade FROM vaccines" )
         alldata = []
-        alldata.append(["ID","name","ndc","location","availability","arrivaldate","expirationdate","changemade"])
+        alldata.append(["ID","Name","NDC","Location","Availability","Arrival Date","Expiration Date","Last Update"])
         for row in cursor:
             thisrow=[]
-            thisrow.append(row[0])
-            thisrow.append(row[1])
-            thisrow.append(row[2])
-            thisrow.append(row[3])
-            thisrow.append(row[4])
-            thisrow.append(row[5])
-            thisrow.append(row[6])
-            thisrow.append(row[7])
+            for x in range(8):
+                thisrow.append(row[x])
             alldata.append(thisrow)
         return alldata
     except Error as e:
         print (e)
         pass
-def updatedata():
-    print(selectdata())
-    dte = input("Enter the ID of the column you want to edit")
-    print("")
-    print("")
-    print("Press 1 if you want to edit name")
-    print("Press 2 if youwant to edit ndc")
-    print('Press 3 if you want to edit location')
-    print('Press 4 if you want to edit availability')
-    print('Press 5 if you want to edit arrivaldate')
-    print('Press 6 if you want to edit expirationdate')
-    print('Press 7 if you want to edit changemade')
 
-    inp + input("Enter which feature of the data do you want to edit:")
-    print("")
-    upv = input ("Enter the new value:")
-
-    if(inp == "1"):
-        sql = "UPDATE vaccines set name = ? where id =  ?"
-    elif (inp == "2"):
-       sql = "UPDATE vaccines set ndc = ? where id =  ?" 
-    elif (inp == "3"):
-       sql = "UPDATE vaccines set location  = ? where id =  ?"
-    elif (inp == "4"):
-       sql = "UPDATE vaccines set availability  = ? where id =  ?"
-    elif (inp == "5"):
-       sql = "UPDATE vaccines set arrivaldate  = ? where id =  ?"
-    elif (inp == "6"):
-       sql = "UPDATE vaccines set expirationdate = ? where id =  ?"  
-    elif (inp == "7"):
-       sql = "UPDATE vaccines set changemade = ? where id =  ?" 
-    try:
-        conn.execute(sql, (str(uvp),str(dte)))
-        conn.connect()
-        print ("successfully updated")
-
-    except Error as e:
-        print(e)
-        pass
-
-def deletedata():
-    selectdata()
-    id_  =  input("Above is your data choice choose the Id you want to delete:")
-    try:
-        sql = "DELETE FROM vaccines WHERE id = "+id_
-        conn.execute(sql,(str(id_)))
-        conn.commit()
-        print("sucessfully deleted")
-    except Error as e:
-        print (e)
-        pass
-
-conn = sqlite3.connect("myinventory.db")
-now = datetime.datetime.now()
-
-if conn:
-    print ("Connected to database.",conn)
-    
-    if conn is not None:
-        sql_create_vaccines_table = """ CREATE TABLE IF NOT EXISTS vaccines (
-                                        id integer PRIMARY KEY,
-                                        name text NOT NULL,
-                                        ndc text,
-                                        location text,
-                                        availability text,
-                                        arrivaldate text,
-                                        expirationdate text,
-                                        changemade text
-                                    ); """
-            # create projects table
-        create_table(conn, sql_create_vaccines_table)
-    else:
-        print("Error! cannot create the database connection.")
-
-else:
-    print("Error connecting database or connecting to it")
-
-while True:
-    print("Choose the operation to perform")
-    print("press 1 to insert the data")
-    print("press 2 to view the data in database")
-    print("press 3 to update the data in dataset")
-    print("press 4 to Delete the data in dataset")
-    print("press X to exit the system")
-    name = input ("Choose an operation to perform: ")
-    if (name =="1"):
-        insertdata()
-    elif(name == "2"):
-        for row in selectdata():
+def update_data():
+    for row in view_data():
             thisrow = "  --> "
             for item in row:
                 thisrow += str(item) + "  "
             print (thisrow)
+    update_ID = input("Enter the ID of the data record to edit: ")
+    print('''
+        1 = edit name
+        2 = edit ndc
+        3 = edit location
+        4 = edit availability
+        5 = edit arrivaldate
+        6 = edit expirationdate''')
+
+    feature = input("Enter which feature of the data do you want to edit: ")
+    update_value = input ("Editing "+feature+ ": enter the new value: ")
+
+    if(feature == "1"):
+        sql = "UPDATE vaccines set name = ? where id =  ?"
+    elif (feature == "2"):
+       sql = "UPDATE vaccines set ndc = ? where id =  ?" 
+    elif (feature == "3"):
+       sql = "UPDATE vaccines set location  = ? where id =  ?"
+    elif (feature == "4"):
+       sql = "UPDATE vaccines set availability  = ? where id =  ?"
+    elif (feature == "5"):
+       sql = "UPDATE vaccines set arrivaldate  = ? where id =  ?"
+    elif (feature == "6"):
+       sql = "UPDATE vaccines set expirationdate = ? where id =  ?"  
+        
+    try:
+        conn.execute(sql, (update_value,update_ID))
+        #update the change made date log
+        sql = "UPDATE vaccines set changemade = ? where id =  ?"
+        changemade = str(now.year) +"/"+str(now.month) +"/"+str(now.day)
+        conn.execute(sql, (changemade,update_ID)) 
+        
+    except Error as e:
+        print(e)
+        pass
+
+def delete_data():
+    id_  =  input("Enter the ID for the data record to delete:")
+    cursor = conn.cursor() #This sets a spot in the database connection (cursor) for targeted retrieval
+    cursor.execute("select name from vaccines where ID = "+id_) #create an object referencing the data
+    delete_item = cursor.fetchall() # get the data
+    confirm = input("Are you sure you want to delete " + id_ + " " + str(delete_item[0]) + "? (Enter 'y' to confirm.)")
+    if confirm.lower() == "y":
+        try:
+            delete_sql = "DELETE FROM vaccines WHERE id = ?"
+            conn.execute(delete_sql,id_)
+            result = conn.commit() #capture the result of the commit and use it to check the result
+            if result == None:
+                print (id_ + " " + str(delete_item[0]) + " deleted.")
+            else:
+                print ("Deletion failed during SQL execution.")
+        except Error as e:
+            print (e)
+            pass
+    else:
+        print("Deletion aborted.")
+
+conn = sqlite3.connect(database_file_path)
+now = datetime.datetime.now()
+
+if conn:
+    print ("Connected to database: ",conn)  
+else:
+    print("Error connecting to database.")
+
+while True:
+    print("Welcome to the Vaccine Management System!")
+    print("1 to view the data")
+    print("2 to insert a new data record")
+    print("3 to update a data record")
+    print("4 to delete a data record")
+    print("X to exit")
+    name = input ("Choose an operation to perform: ")
+    if (name =="1"):
+        for row in view_data():
+            thisrow = "  --> "
+            for item in row:
+                thisrow += str(item) + "  "
+            print (thisrow)
+    elif(name == "2"):
+        insert_data()
     elif(name == "3"):
-        updatedata()
+        update_data()
     elif(name == "4"):
-        deletedata()
+        delete_data()
     elif(name == "X"):
         conn.close()
         break
